@@ -1,64 +1,99 @@
 {
-  "project": "MyApp",
-  "branchName": "ralph/task-priority",
-  "description": "Task Priority System - Add priority levels to tasks",
-  "userStories": [
-    {
-      "id": "US-001",
-      "title": "Add priority field to database",
-      "description": "As a developer, I need to store task priority so it persists across sessions.",
-      "acceptanceCriteria": [
-        "Add priority column to tasks table: 'high' | 'medium' | 'low' (default 'medium')",
-        "Generate and run migration successfully",
-        "Typecheck passes"
-      ],
-      "priority": 1,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "US-002",
-      "title": "Display priority indicator on task cards",
-      "description": "As a user, I want to see task priority at a glance.",
-      "acceptanceCriteria": [
-        "Each task card shows colored priority badge (red=high, yellow=medium, gray=low)",
-        "Priority visible without hovering or clicking",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 2,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "US-003",
-      "title": "Add priority selector to task edit",
-      "description": "As a user, I want to change a task's priority when editing it.",
-      "acceptanceCriteria": [
-        "Priority dropdown in task edit modal",
-        "Shows current priority as selected",
-        "Saves immediately on selection change",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 3,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "US-004",
-      "title": "Filter tasks by priority",
-      "description": "As a user, I want to filter the task list to see only high-priority items.",
-      "acceptanceCriteria": [
-        "Filter dropdown with options: All | High | Medium | Low",
-        "Filter persists in URL params",
-        "Empty state message when no tasks match filter",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 4,
-      "passes": false,
-      "notes": ""
-    }
-  ]
+"project": "ExampleDeviceViewer",
+"branchName": "ralph/device-viewer",
+"description": "Device Viewer Tool - PowerShell backend with optional WPF GUI to display device status",
+"userStories": [
+        {
+            "id": "US-001",
+            "title": "Create device data retrieval function",
+            "description": "As a developer, I need a function that returns a list of devices so the application has data to display.",
+            "acceptanceCriteria": [
+                "Create function Get-DeviceList",
+                "Returns an array of PSCustomObject",
+                "Each object includes Name, Status, LastCheckIn",
+                "Function runs without error in PowerShell 7",
+                "Pester tests validate output structure and types",
+                "Invoke-ScriptAnalyzer passes"
+            ],
+            "priority": 1,
+            "passes": false,
+            "notes": "Implemented Get-DeviceList returning PSCustomObject array with Name, Status, LastCheckIn. All Pester tests pass. ScriptAnalyzer clean."
+        },
+        {
+            "id": "US-002",
+            "title": "Add device filtering function",
+            "description": "As a developer, I want to filter devices by status so users can view only relevant systems.",
+            "acceptanceCriteria": [
+                "Create function Get-FilteredDevices",
+                "Accepts Status parameter (e.g., Healthy, Warning, Offline)",
+                "Returns filtered results from Get-DeviceList",
+                "Handles invalid or empty input gracefully",
+                "Pester tests validate filtering behavior and edge cases",
+                "Invoke-ScriptAnalyzer passes"
+            ],
+            "priority": 2,
+            "passes": false,
+            "notes": "Implemented Get-FilteredDevices with ValidateSet and SuppressMessageAttribute for PSUseSingularNouns. Returns all devices when Status is empty, filters otherwise. All 14 Pester tests pass. ScriptAnalyzer clean."
+        },
+        {
+            "id": "US-003",
+            "title": "Add device summary function",
+            "description": "As a developer, I want a summary of device counts by status for quick insights.",
+            "acceptanceCriteria": [
+                "Create function Get-DeviceSummary",
+                "Returns counts grouped by Status",
+                "Output is a PSCustomObject with properties for each status",
+                "Pester tests validate correct counts",
+                "Invoke-ScriptAnalyzer passes"
+            ],
+            "priority": 3,
+            "passes": false,
+            "notes": "Implemented Get-DeviceSummary returning PSCustomObject with Healthy, Warning, Offline count properties. All 23 Pester tests pass (9 new). ScriptAnalyzer clean."
+        },
+        {
+            "id": "US-004",
+            "title": "Create WPF GUI layout",
+            "description": "As a user, I want a simple GUI to view devices instead of using the command line.",
+            "acceptanceCriteria": [
+                "Create MainWindow.xaml",
+                "Includes a DataGrid to display devices",
+                "Includes a dropdown or buttons for filtering by status",
+                "Includes a refresh button",
+                "UI loads without errors on Windows PowerShell"
+            ],
+            "priority": 4,
+            "passes": false,
+            "notes": "Created MainWindow.xaml with DataGrid (DeviceGrid), ComboBox (StatusFilter) with All/Healthy/Warning/Offline items, Button (RefreshButton), and summary TextBlock. Updated Start-App to load XAML, validate all controls, and show window. Added Get-XamlPath helper function. 11 new Pester tests (34 total). ScriptAnalyzer clean."
+        },
+        {
+            "id": "US-005",
+            "title": "Connect GUI to backend functions",
+            "description": "As a user, I want the GUI to display real data from the backend functions.",
+            "acceptanceCriteria": [
+                "UI calls Get-DeviceList to populate DataGrid",
+                "Filtering controls call Get-FilteredDevices",
+                "Refresh button reloads data",
+                "No logic duplication in UI layer",
+                "Core functionality works without launching UI"
+            ],
+            "priority": 5,
+            "passes": false,
+            "notes": "Added Get-SummaryText function returning formatted status count string. Updated Start-App to use Get-FilteredDevices for initial data load, set SummaryText via Get-SummaryText, and wired RefreshButton.Click and StatusFilter.SelectionChanged to a shared $updateGrid scriptblock. 5 new Pester tests (39 total). ScriptAnalyzer clean."
+        },
+        {
+            "id": "US-006",
+            "title": "Add CLI entry point",
+            "description": "As a user, I want to run the tool without the GUI for automation or scripting.",
+            "acceptanceCriteria": [
+                "Create a script entry point",
+                "Outputs device list to console in readable format",
+                "Supports optional filtering parameter",
+                "Pester tests validate CLI behavior where applicable",
+                "Invoke-ScriptAnalyzer passes"
+            ],
+            "priority": 6,
+            "passes": false,
+            "notes": "Added Invoke-DeviceViewer function returning filtered PSCustomObject array via Get-FilteredDevices. Added script-level param() block with -Cli switch and optional -Status. Entry point routes to Invoke-DeviceViewer (CLI) or Start-App (GUI) based on -Cli switch. 5 new Pester tests (44 total). ScriptAnalyzer clean."
+        }
+    ]
 }

@@ -2,88 +2,129 @@
 
 ![Ralph](ralph.webp)
 
-Ralph is an autonomous AI agent loop that runs AI coding tools ([Amp](https://ampcode.com) or [Claude Code](https://docs.anthropic.com/en/docs/claude-code)) repeatedly until all PRD items are complete. Each iteration is a fresh instance with clean context. Memory persists via git history, `progress.txt`, and `prd.json`.
+Ralph is an autonomous AI agent loop that runs AI coding tools ([Amp](https://ampcode.com?utm_source=chatgpt.com) or [Claude Code](https://docs.anthropic.com/en/docs/claude-code?utm_source=chatgpt.com)) repeatedly until all PRD items are complete. Each iteration is a fresh instance with clean context. Memory persists via git history, `progress.txt`, and `prd.json`.
 
-Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
+Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/?utm_source=chatgpt.com).
 
-[Read my in-depth article on how I use Ralph](https://x.com/ryancarson/status/2008548371712135632)
+[Read my in-depth article on how I use Ralph](https://x.com/ryancarson/status/2008548371712135632?utm_source=chatgpt.com)
 
 ## Prerequisites
 
+### Required
+
+- A git repository for your project
 - One of the following AI coding tools installed and authenticated:
   - [Amp CLI](https://ampcode.com) (default)
-  - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (`npm install -g @anthropic-ai/claude-code`)
-- `jq` installed (`brew install jq` on macOS)
-- A git repository for your project
+  - [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
+
+### Windows / PowerShell Requirements
+
+If using Ralph for PowerShell projects on Windows:
+
+Install with:
+
+```powershell
+Install-Module Pester -Force -Scope CurrentUser
+Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+```
+
+Verify:
+
+```powershell
+Get-Module Pester -ListAvailable
+Get-Module PSScriptAnalyzer -ListAvailable
+```
 
 ## Setup
 
 ### Option 1: Copy to your project
 
-Copy the ralph files into your project:
+Copy the Ralph files into your project:
 
-```bash
+```powershell
 # From your project root
-mkdir -p scripts/ralph
-cp /path/to/ralph/ralph.sh scripts/ralph/
+New-Item -ItemType Directory -Force -Path .\scripts\ralph | Out-Null
+Copy-Item C:\path\to\ralph\ralph.ps1 .\scripts\ralph\
 
 # Copy the prompt template for your AI tool of choice:
-cp /path/to/ralph/prompt.md scripts/ralph/prompt.md    # For Amp
+Copy-Item C:\path\to\ralph\prompt.md .\scripts\ralph\prompt.md    # For Amp
 # OR
-cp /path/to/ralph/CLAUDE.md scripts/ralph/CLAUDE.md    # For Claude Code
-
-chmod +x scripts/ralph/ralph.sh
+Copy-Item C:\path\to\ralph\CLAUDE.md .\scripts\ralph\CLAUDE.md    # For Claude Code
 ```
 
 ### Option 2: Install skills globally (Amp)
 
-Copy the skills to your Amp or Claude config for use across all projects:
+Copy the skills into your Amp configuration so they are available across all projects.
 
-For AMP
-```bash
-cp -r skills/prd ~/.config/amp/skills/
-cp -r skills/ralph ~/.config/amp/skills/
+For AMP:
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\.config\amp\skills" | Out-Null
+
+Copy-Item -Recurse .\skills\prd "$HOME\.config\amp\skills\"
+Copy-Item -Recurse .\skills\ralph "$HOME\.config\amp\skills\"
 ```
 
-For Claude Code (manual)
-```bash
-cp -r skills/prd ~/.claude/skills/
-cp -r skills/ralph ~/.claude/skills/
+For Claude Code (manual):
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\.claude\skills" | Out-Null
+
+Copy-Item -Recurse .\skills\prd "$HOME\.claude\skills\"
+Copy-Item -Recurse .\skills\ralph "$HOME\.claude\skills\"
 ```
+
+---
 
 ### Option 3: Use as Claude Code Marketplace
 
 Add the Ralph marketplace to Claude Code:
 
-```bash
+```text
 /plugin marketplace add snarktank/ralph
 ```
 
 Then install the skills:
 
-```bash
+```text
 /plugin install ralph-skills@ralph-marketplace
 ```
 
 Available skills after installation:
-- `/prd` - Generate Product Requirements Documents
-- `/ralph` - Convert PRDs to prd.json format
+
+- `/prd` — Generate Product Requirements Documents
+- `/ralph` — Convert PRDs to `prd.json` format
 
 Skills are automatically invoked when you ask Claude to:
-- "create a prd", "write prd for", "plan this feature"
-- "convert this prd", "turn into ralph format", "create prd.json"
+
+- "create a prd"
+- "write prd for"
+- "plan this feature"
+- "convert this prd"
+- "turn into ralph format"
+- "create prd.json"
+
+---
 
 ### Configure Amp auto-handoff (recommended)
 
-Add to `~/.config/amp/settings.json`:
+Create or edit:
+
+```text
+%USERPROFILE%\.config\amp\settings.json
+```
+
+Add:
 
 ```json
 {
-  "amp.experimental.autoHandoff": { "context": 90 }
+  "amp.experimental.autoHandoff": {
+    "context": 90
+  }
 }
 ```
 
-This enables automatic handoff when context fills up, allowing Ralph to handle large stories that exceed a single context window.
+This allows Amp to automatically hand off context when a story exceeds a single context window.
 
 ## Workflow
 
@@ -91,7 +132,7 @@ This enables automatic handoff when context fills up, allowing Ralph to handle l
 
 Use the PRD skill to generate a detailed requirements document:
 
-```
+```text
 Load the prd skill and create a PRD for [your feature description]
 ```
 
@@ -101,7 +142,7 @@ Answer the clarifying questions. The skill saves output to `tasks/prd-[feature-n
 
 Use the Ralph skill to convert the markdown PRD to JSON:
 
-```
+```text
 Load the ralph skill and convert tasks/prd-[feature-name].md to prd.json
 ```
 
@@ -109,21 +150,21 @@ This creates `prd.json` with user stories structured for autonomous execution.
 
 ### 3. Run Ralph
 
-```bash
-# Using Amp (default)
-./scripts/ralph/ralph.sh [max_iterations]
+#### Windows
 
-# Using Claude Code
-./scripts/ralph/ralph.sh --tool claude [max_iterations]
+```cmd
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\ralph\ralph.ps1 -Tool amp
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\ralph\ralph.ps1 -Tool claude
 ```
 
-Default is 10 iterations. Use `--tool amp` or `--tool claude` to select your AI coding tool.
+Default is 10 iterations.
 
 Ralph will:
+
 1. Create a feature branch (from PRD `branchName`)
 2. Pick the highest priority story where `passes: false`
 3. Implement that single story
-4. Run quality checks (typecheck, tests)
+4. Run quality checks
 5. Commit if checks pass
 6. Update `prd.json` to mark story as `passes: true`
 7. Append learnings to `progress.txt`
@@ -133,78 +174,81 @@ Ralph will:
 
 | File | Purpose |
 |------|---------|
-| `ralph.sh` | The bash loop that spawns fresh AI instances (supports `--tool amp` or `--tool claude`) |
+| `ralph.ps1` | PowerShell loop for Windows |
 | `prompt.md` | Prompt template for Amp |
 | `CLAUDE.md` | Prompt template for Claude Code |
-| `prd.json` | User stories with `passes` status (the task list) |
-| `prd.json.example` | Example PRD format for reference |
-| `progress.txt` | Append-only learnings for future iterations |
-| `skills/prd/` | Skill for generating PRDs (works with Amp and Claude Code) |
-| `skills/ralph/` | Skill for converting PRDs to JSON (works with Amp and Claude Code) |
-| `.claude-plugin/` | Plugin manifest for Claude Code marketplace discovery |
-| `flowchart/` | Interactive visualization of how Ralph works |
+| `prd.json` | User stories with `passes` status |
+| `prd.json.example` | Example PRD format |
+| `progress.txt` | Append-only learnings |
+| `skills/prd/` | Skill for generating PRDs |
+| `skills/ralph/` | Skill for converting PRDs to JSON |
+| `.claude-plugin/` | Marketplace manifest |
+| `flowchart/` | Interactive visualization |
 
 ## Flowchart
 
 [![Ralph Flowchart](ralph-flowchart.png)](https://snarktank.github.io/ralph/)
 
-**[View Interactive Flowchart](https://snarktank.github.io/ralph/)** - Click through to see each step with animations.
-
-The `flowchart/` directory contains the source code. To run locally:
-
-```bash
-cd flowchart
-npm install
-npm run dev
-```
+**[View Interactive Flowchart](https://snarktank.github.io/ralph/?utm_source=chatgpt.com)** - Click through to see each step.
 
 ## Critical Concepts
 
 ### Each Iteration = Fresh Context
 
-Each iteration spawns a **new AI instance** (Amp or Claude Code) with clean context. The only memory between iterations is:
-- Git history (commits from previous iterations)
-- `progress.txt` (learnings and context)
-- `prd.json` (which stories are done)
+Each iteration spawns a new AI instance. Memory between iterations:
+
+- Git history
+- `progress.txt`
+- `prd.json`
 
 ### Small Tasks
 
-Each PRD item should be small enough to complete in one context window. If a task is too big, the LLM runs out of context before finishing and produces poor code.
+Each PRD item should be small enough to complete in one context window.
 
-Right-sized stories:
-- Add a database column and migration
-- Add a UI component to an existing page
-- Update a server action with new logic
-- Add a filter dropdown to a list
+Good:
 
-Too big (split these):
-- "Build the entire dashboard"
-- "Add authentication"
-- "Refactor the API"
+- Add a database column
+- Add a UI component
+- Add a dropdown
+- Update one service
+
+Too large:
+
+- Build entire dashboard
+- Add auth
+- Refactor API
 
 ### AGENTS.md Updates Are Critical
 
-After each iteration, Ralph updates the relevant `AGENTS.md` files with learnings. This is key because AI coding tools automatically read these files, so future iterations (and future human developers) benefit from discovered patterns, gotchas, and conventions.
-
-Examples of what to add to AGENTS.md:
-- Patterns discovered ("this codebase uses X for Y")
-- Gotchas ("do not forget to update Z when changing W")
-- Useful context ("the settings panel is in component X")
+After each iteration, Ralph updates relevant `AGENTS.md` files so future runs inherit project learnings automatically.
 
 ### Feedback Loops
 
 Ralph only works if there are feedback loops:
-- Typecheck catches type errors
-- Tests verify behavior
-- CI must stay green (broken code compounds across iterations)
 
-### Browser Verification for UI Stories
+- Lint
+- Tests
+- Git commits
+- Human review
 
-Frontend stories must include "Verify in browser using dev-browser skill" in acceptance criteria. Ralph will use the dev-browser skill to navigate to the page, interact with the UI, and confirm changes work.
+### PowerShell Projects
+
+For PowerShell projects, quality checks should include:
+
+```powershell
+Invoke-ScriptAnalyzer -Path ./src -Recurse
+Invoke-Pester -Path ./tests
+```
+
+These checks are critical for catching runtime regressions before they compound across iterations.
 
 ### Stop Condition
 
-When all stories have `passes: true`, Ralph outputs `<promise>COMPLETE</promise>` and the loop exits.
+When all stories have `passes: true`, Ralph outputs:
+
+```xml
+<promise>COMPLETE</promise>
+```
 
 ## Debugging
 
@@ -212,9 +256,9 @@ Check current state:
 
 ```bash
 # See which stories are done
-cat prd.json | jq '.userStories[] | {id, title, passes}'
+cat prd.json
 
-# See learnings from previous iterations
+# See learnings
 cat progress.txt
 
 # Check git history
@@ -223,17 +267,24 @@ git log --oneline -10
 
 ## Customizing the Prompt
 
-After copying `prompt.md` (for Amp) or `CLAUDE.md` (for Claude Code) to your project, customize it for your project:
-- Add project-specific quality check commands
-- Include codebase conventions
-- Add common gotchas for your stack
+After copying `prompt.md` or `CLAUDE.md`, customize it for your project:
+
+- Add project-specific checks
+- Add codebase conventions
+- Add known gotchas
 
 ## Archiving
 
-Ralph automatically archives previous runs when you start a new feature (different `branchName`). Archives are saved to `archive/YYYY-MM-DD-feature-name/`.
+Ralph automatically archives previous runs when you start a new feature branch.
+
+Archives are saved to:
+
+```text
+archive/YYYY-MM-DD-feature-name/
+```
 
 ## References
 
-- [Geoffrey Huntley's Ralph article](https://ghuntley.com/ralph/)
-- [Amp documentation](https://ampcode.com/manual)
-- [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code)
+- [Geoffrey Huntley's Ralph article](https://ghuntley.com/ralph/?utm_source=chatgpt.com)
+- [Amp documentation](https://ampcode.com/manual?utm_source=chatgpt.com)
+- [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code?utm_source=chatgpt.com)
