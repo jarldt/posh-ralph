@@ -14,10 +14,10 @@ cd flowchart && npm run dev
 cd flowchart && npm run build
 
 # Run Ralph with Amp (default)
-./ralph.sh [max_iterations]
+./ralph.ps1 [max_iterations]
 
 # Run Ralph with Claude Code
-./ralph.sh --tool claude [max_iterations]
+./ralph.ps1 -tool claude -MaxIterations [max_iterations]
 ```
 
 ## Key Files
